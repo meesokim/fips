@@ -58,6 +58,7 @@ for tool in [AAPT, DX, ZIPALIGN, APKSIGNER]:
         sys.exit(10)
 
 parser = argparse.ArgumentParser(description="Android APK package helper.")
+parser.add_argument('--src', help='path to the cmake src dir', required=True)
 parser.add_argument('--path', help='path to the cmake build dir', required=True)
 parser.add_argument('--deploy', help='path where resulting APK will be copied to', required=True)
 parser.add_argument('--name', help='cmake target name', required=True)
@@ -99,7 +100,13 @@ dst_so = libs_dir + so_name
 shutil.copy(src_so, dst_so)
 
 # copy the dummy assets directory
-res_dir = apk_dir + 'res/'
+res_src_dir = args.src + '/res/'
+res_dir = apk_dir + '/res/'
+if os.path.exists(res_src_dir):
+    if os.path.exists(res_dir):
+        shutil.rmtree(res_dir)
+    shutil.copytree(res_src_dir, res_dir)
+
 if not os.path.exists(res_dir):
     shutil.copytree(fips_dir + '/templates/android_assets/res', res_dir)
 
@@ -115,8 +122,10 @@ with open(apk_dir + 'AndroidManifest.xml', 'w') as f:
     f.write('  <application android:label="{}" android:debuggable="true" android:hasCode="false">\n'.format(args.name))
     f.write('    <activity android:name="android.app.NativeActivity"\n');
     f.write('      android:label="{}"\n'.format(args.name))
+    f.write('      android:icon = "@mipmap/ic_launcher"')
     f.write('      android:launchMode="singleTask"\n')
-    f.write('      android:screenOrientation="fullUser"\n')
+    f.write('      android:screenOrientation="landscape"\n')
+    f.write('      android:theme="@android:style/Theme.NoTitleBar.Fullscreen" \n')
     f.write('      android:configChanges="orientation|screenSize|keyboard|keyboardHidden">\n')
     f.write('      <meta-data android:name="android.app.lib_name" android:value="{}"/>\n'.format(args.name))
     f.write('      <intent-filter>\n')
@@ -126,7 +135,11 @@ with open(apk_dir + 'AndroidManifest.xml', 'w') as f:
     f.write('    </activity>\n')
     f.write('  </application>\n')
     f.write('</manifest>\n')
-
+with open(apk_dir + 'Style.xml', 'w') as f:
+    f.write('<style name="CodeFont" parent="android:Theme.NoTitleBar.Fullscreen">\n')
+    f.write('    <item name="android:windowNoTitle">true</item>\n')
+    f.write('    <item name="android:windowFullscreen">true</item>\n')
+    f.write('</style>\n')
 # prepare APK structure
 cmd = [
     AAPT,
