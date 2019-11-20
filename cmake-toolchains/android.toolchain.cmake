@@ -426,7 +426,7 @@ endif()
 if(USE_NOSTDLIBXX AND ANDROID_TOOLCHAIN STREQUAL clang)
   list(APPEND ANDROID_LINKER_FLAGS "-nostdlib++")
 endif()
-
+list(APPEND ANDROID_STL_STATIC_LIBRARIES log)
 # Behavior of CMAKE_SYSTEM_LIBRARY_PATH and CMAKE_LIBRARY_PATH are really weird
 # when CMAKE_SYSROOT is set. The library path is appended to the sysroot even if
 # the library path is an abspath. Using a relative path from the sysroot doesn't
@@ -625,7 +625,7 @@ endforeach()
 foreach(library ${ANDROID_STL_LDLIBS})
   list(APPEND ANDROID_CXX_STANDARD_LIBRARIES "-l${library}")
 endforeach()
-set(CMAKE_C_STANDARD_LIBRARIES_INIT "-latomic -lm")
+set(CMAKE_C_STANDARD_LIBRARIES_INIT "-latomic -lm ")
 set(CMAKE_CXX_STANDARD_LIBRARIES_INIT "${CMAKE_C_STANDARD_LIBRARIES_INIT}")
 if(ANDROID_CXX_STANDARD_LIBRARIES)
   string(REPLACE ";" "\" \"" ANDROID_CXX_STANDARD_LIBRARIES "\"${ANDROID_CXX_STANDARD_LIBRARIES}\"")
@@ -715,7 +715,7 @@ else()
   list(APPEND ANDROID_COMPILER_FLAGS
     -Wformat -Werror=format-security)
 endif()
-
+list(APPEND ANDROID_LINKER_FLAGS -llog)
 # Convert these lists into strings.
 string(REPLACE ";" " " ANDROID_COMPILER_FLAGS         "${ANDROID_COMPILER_FLAGS}")
 string(REPLACE ";" " " ANDROID_COMPILER_FLAGS_CXX     "${ANDROID_COMPILER_FLAGS_CXX}")
